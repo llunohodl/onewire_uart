@@ -5,10 +5,17 @@
 #define LP_MODE 1 //Low power: 1 - Core off (WFI mode) while TX performed 
 //UART1_TX pin GPIOC pin 3
 
+#define LP_DEBUG 1 //Use PC2 pin for debug
+
 /* Set UART baundrate to 9600*/
 void OW_HAL_Speed_9600(){
   GPIOC->ODR|=(1<<3);
   GPIOC->DDR|=(1<<3);
+  #if LP_DEBUG>0
+  GPIOC->ODR&=~(1<<2);
+  GPIOC->CR1|=(1<<2); //Push-pull
+  GPIOC->DDR|=(1<<2);
+  #endif
   USART_Init(USART1,9600,USART_WordLength_8b,USART_StopBits_1,USART_Parity_No,
              USART_Mode_Rx|USART_Mode_Tx);
   USART_HalfDuplexCmd(USART1, ENABLE);
@@ -18,6 +25,11 @@ void OW_HAL_Speed_9600(){
 void OW_HAL_Speed_115200(){
   GPIOC->ODR|=(1<<3);
   GPIOC->DDR|=(1<<3);
+  #if LP_DEBUG>0
+  GPIOC->ODR&=~(1<<2);
+  GPIOC->CR1|=(1<<2); //Push-pull
+  GPIOC->DDR|=(1<<2);
+  #endif
   USART_Init(USART1,115200,USART_WordLength_8b,USART_StopBits_1,USART_Parity_No,
              USART_Mode_Rx|USART_Mode_Tx);
   USART_HalfDuplexCmd(USART1, ENABLE);
@@ -35,6 +47,9 @@ uint8_t OW_HAL_SendRecive(uint8_t data){
 #if LP_MODE>0
   USART1->CR2 |= USART_CR2_RIEN;
   RX_flag=1;
+  #if LP_DEBUG>0
+  GPIOC->ODR|=(1<<2);
+  #endif
   do{
     wfi(); //Wait for interrupt
   }while(RX_flag);
@@ -53,6 +68,9 @@ uint8_t OW_HAL_SendRecive(uint8_t data){
 INTERRUPT_HANDLER(USART1_RX_TIM5_CC_IRQHandler,28){
   #if LP_MODE>0
   if(USART1->SR&USART_SR_RXNE){
+    #if LP_DEBUG>0
+    GPIOC->ODR&=~(1<<2);
+    #endif
     RX_data=USART1->DR;
     RX_flag=0;
     USART1->CR2&=~USART_CR2_RIEN;
