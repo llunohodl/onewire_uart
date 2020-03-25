@@ -71,11 +71,11 @@ int8_t OW_Read_Poll(uint8_t* Tx, uint8_t TxLen,
                     uint8_t* Rx, uint8_t RxLen){
   
   OW_HAL_toUART();
+
   if(OW_Reset()!=0){
     OW_HAL_toPower();
     return -1;
   }
-  OW_HAL_Speed_115200();
   
   while(TxLen){
     if(TxLen>RxLen){

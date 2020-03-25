@@ -6,6 +6,7 @@
 #endif
 
 int8_t DS18B20_start();
+int8_t DS18B20_convert_T();
 int8_t DS18B20_get_T(uint8_t* T_array);
 
 #endif /* DS18B20_H_ */
