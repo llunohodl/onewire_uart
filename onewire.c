@@ -56,27 +56,28 @@ uint8_t OW_toByte(uint8_t *ow_bits){
  */
 static int8_t OW_Reset() {
 	OW_HAL_Speed_9600();
-    uint8_t ret = OW_HAL_SendRecive(0xf0)!=0x0F ? 0 : -1;
+    uint8_t ret = OW_HAL_SendRecive(0xf0);
     OW_HAL_Speed_115200();
+    return ret == 0xF0 ? -1 : 0;
 }
 
 /* OW_Read_Poll send command polling
- * Res - reset bus before transmit
  * Tx - transmit data array / TxLen transmit data array len
  * Rx - receive data array / RxLen receive data array len 
  * RxLen<=TxLen reading only last bytes, for example:
  * TxLen = 8 / RxLen = 6 in Rx data recived when bytes 2..8 transmitted
  */
-int8_t OW_Read_Poll(uint8_t Res,
-                    uint8_t* Tx, uint8_t TxLen, 
+int8_t OW_Read_Poll(uint8_t* Tx, uint8_t TxLen, 
                     uint8_t* Rx, uint8_t RxLen){
+  
   OW_HAL_toUART();
-  if(Res&&OW_Reset()){ //Device not respond
+  if(OW_Reset()!=0){
     OW_HAL_toPower();
     return -1;
   }
+  OW_HAL_Speed_115200();
+  
   while(TxLen){
-    OW_toBits(*Tx,ow_buf);
     if(TxLen>RxLen){
       for(uint8_t mask=0x01; mask>0; mask<<=1){
         //Send without receive

@@ -1,34 +1,21 @@
 #ifndef ONEWIRE_H_
 #define ONEWIRE_H_
 
-// для разных процессоров потребуется проверить функцию OW_Init
-// на предмет расположения ножек USART
-#include "stm32f10x.h"
+#ifndef uint8_t
+#include <stdint.h>
+#endif
 
-// выбираем, на каком USART находится 1-wire
-//#define OW_USART1
-#define OW_USART2
-//#define OW_USART3
-//#define OW_USART4
+#ifndef NULL
+#define NULL ((void*)0)
+#endif
 
-
-// если нужно отдавать тики FreeRTOS, то раскомментировать
-//#define OW_GIVE_TICK_RTOS
-
-// первый параметр функции OW_Send
-#define OW_SEND_RESET		1
-#define OW_NO_RESET		2
-
-// статус возврата функций
-#define OW_OK			1
-#define OW_ERROR		2
-#define OW_NO_DEVICE	3
-
-#define OW_NO_READ		0xff
-
-#define OW_READ_SLOT	0xff
-
-uint8_t OW_Init();
-uint8_t OW_Send(uint8_t sendReset, uint8_t *command, uint8_t cLen, uint8_t *data, uint8_t dLen, uint8_t readStart);
+/* OW_Read_Poll send command polling
+ * Tx - transmit data array / TxLen transmit data array len
+ * Rx - receive data array / RxLen receive data array len 
+ * RxLen<=TxLen reading only last bytes, for example:
+ * TxLen = 8 / RxLen = 6 in Rx data recived when bytes 2..8 transmitted
+ */
+int8_t OW_Read_Poll(uint8_t* Tx, uint8_t TxLen, 
+                    uint8_t* Rx, uint8_t RxLen);
 
 #endif /* ONEWIRE_H_ */
