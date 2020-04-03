@@ -27,6 +27,10 @@ void OW_HAL_Speed_9600(){
              USART_Mode_Rx|USART_Mode_Tx);
   USART_HalfDuplexCmd(USART1, ENABLE);
   #else
+  #ifdef STM8L15X_LD
+  //USART1_TX on PC5 and USART1_RX on PC6 
+  SYSCFG->RMPCR1|=(2<<4);
+  #endif
   //9600
   USART1->BRR2=0x00;
   USART1->BRR1=0x1A;
