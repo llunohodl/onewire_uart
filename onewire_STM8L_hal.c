@@ -70,13 +70,15 @@ uint8_t OW_HAL_SendRecive(uint8_t data){
   USART1->SR&=~USART_SR_TC; //Reset TC
   USART1->DR = data; //Start transmit
 #if LP_MODE>0
-  USART1->CR2 |= USART_CR2_RIEN;
+  USART1->CR2 |= USART_CR2_RIEN|USART_CR2_TCIEN;
   RX_flag=1;
-  do{
-    DBG_Off();
-    wfi(); //Wait for interrupt
-    DBG_On();
-  }while(RX_flag);
+  DBG_Off();
+  wfi(); //Wait for interrupt
+  DBG_On();
+  if(RX_flag==1){
+    RX_data=data;
+  }
+  USART1->CR2 &=~(USART_CR2_RIEN|USART_CR2_TCIEN);
 #else
   while((USART1->SR&USART_SR_RXNE)==0);
   RX_data = USART1->DR;
@@ -97,6 +99,10 @@ INTERRUPT_HANDLER(USART1_RX_TIM5_CC_IRQHandler,28){
     USART1->CR2&=~USART_CR2_RIEN;
   }
   #endif
+}
+
+INTERRUPT_HANDLER(USART1_TX_TIM5_UPD_OVF_TRG_BRK_IRQHandler,27){
+    USART1->CR2&=~USART_CR2_TCIEN;
 }
 
 /* Set 1-Wire pin to communication mode */
